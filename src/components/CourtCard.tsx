@@ -13,7 +13,6 @@ interface CourtCardProps {
 }
 
 export default function CourtCard({ name, id, location, type, capacity, available, pricePerHour }: CourtCardProps) {
-  const router = useRouter();
 
   const stopPropagation = (e: React.MouseEvent) => e.stopPropagation();
 

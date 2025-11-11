@@ -1,11 +1,14 @@
 'use client';
 import React from 'react';
 import CourtQueueCard from '@/components/CourtQueueCard';
+import TeamManager from '@/components/TeamManager';
 
 interface QueueUser {
-  userName: string;
-  teamId?: string;
-  joinedAt: string;
+    userId: string;
+    userName: string;
+    teamId?: string;
+    position?: number;
+    joinedAt: string;
 }
 
 interface CourtQueue {

@@ -3,8 +3,10 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 
 interface QueueUser {
+  userId: string;
   userName: string;
   teamId?: string;
+  position?: number;
   joinedAt: string;
 }
 
@@ -39,8 +41,8 @@ export default function CourtQueueCard({ courtQueue }: CourtQueueCardProps) {
         <div className="card-body">
           <div className="row">
             <div className="col-6 text-center border-right">
-              <div className="text-2xl font-bold text-warning">{courtQueue.queueLength}</div>
-              <small className="text-muted">People in Queue</small>
+              <div className="text-2xl font-bold text-warning">{courtQueue.users?.length}</div>
+              <small className="text-muted">Team in Queue</small>
             </div>
             <div className="col-6 text-center">
               <div className="text-2xl font-bold text-warning">{courtQueue.averageWaitTime}</div>
