@@ -7,21 +7,29 @@ import CourtFormModal from '@/components/modals/CourtFormModal';
 import CourtFilterModal from '@/components/modals/CourtFilterModal';
 import CourtDeleteModal from '@/components/modals/CourtDeleteModal';
 import CourtModal from '@/components/modals/CourtModal';
+import CourtCard from '@/components/CourtCard';
+import CourtCatalog from '@/components/CourtCatalog';
+import axios from 'axios';
+import getCourts from '@/libs/getCourts';
 
-export default function CourtsPage() {
+interface Court {
+    id: string | number;
+    name: string;
+    location: string;
+    type: string;
+    capacity: number;
+    pricePerHour: number;
+    available: boolean;
+  }
+
+export default async function CourtsPage() {
+    const courtsJson = getCourts();
+
 	const [courts, setCourts] = useState<any[]>([]);
 	const [selectedCourt, setSelectedCourt] = useState<any>(null);
 	const [deleteCourtId, setDeleteCourtId] = useState<string | null>(null);
 	const [filterOpen, setFilterOpen] = useState(false);
 	const [formOpen, setFormOpen] = useState(false);
-
-	useEffect(() => {
-		// Fetch court list from API
-		fetch('/api/courts')
-			.then((res) => res.json())
-			.then((data) => setCourts(data))
-			.catch(console.error);
-	}, []);
 
 	return (
 		<div className="container mx-auto py-10">
@@ -33,11 +41,21 @@ export default function CourtsPage() {
 
 			<SearchBar onFilter={() => setFilterOpen(true)} />
 
-			<CourtTable
+			{/* <CourtTable
 				courts={courts}
 				onView={(court) => setSelectedCourt(court)}
 				onDelete={(id) => setDeleteCourtId(String(id))}
-			/>
+			/> */}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+                {(await courtsJson).success ? (
+                    <CourtCatalog courts={courtsJson}/>
+                ) : (
+                    <p className="text-center text-gray-500 col-span-full">
+                    No courts found.
+                    </p>
+                )}
+            </div>
 
 			<div className="text-right mt-4">
 				<button
@@ -58,16 +76,42 @@ export default function CourtsPage() {
                 }}
             />
             )}
-            {/* {filterOpen && <CourtFilterModal onClose={() => setFilterOpen(false)} />}
+            {filterOpen && <CourtFilterModal 
+            onClose={() => setFilterOpen(false)} 
+            onFilter={(filters) => {
+                // apply filters to courts
+                console.log(filters);
+                setFilterOpen(false);
+              }}/>}
             {selectedCourt && (
-            <CourtModal court={selectedCourt} onClose={() => setSelectedCourt(null)} />
+                <CourtModal title={selectedCourt.name} onClose={() => setSelectedCourt(null)}>
+                    <p>Location: {selectedCourt.location}</p>
+                    <p>Type: {selectedCourt.type}</p>
+                    <p>Capacity: {selectedCourt.capacity} people</p>
+                    <p>Price per Hour: ${selectedCourt.pricePerHour}</p>
+                    <p>Status: {selectedCourt.available ? 'Available' : 'Unavailable'}</p>
+                </CourtModal>
             )}
             {deleteCourtId && (
             <CourtDeleteModal
-                courtId={deleteCourtId}
+                courtName={courts.find(c => c.id === deleteCourtId)?.name || 'Court'}
                 onClose={() => setDeleteCourtId(null)}
-            />
-            )} */}
+                onDelete={async () => {
+                    try {
+                      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/courts/${deleteCourtId}`);
+                      
+                      // Remove the deleted court from state
+                      setCourts(courts.filter(c => c.id !== deleteCourtId));
+              
+                      // Close the modal
+                      setDeleteCourtId(null);
+                    } catch (error) {
+                      console.error("Failed to delete court:", error);
+                      alert("Failed to delete court. Please try again.");
+                    }
+            }}
+          />
+            )}
 		</div>
 	);
 }
